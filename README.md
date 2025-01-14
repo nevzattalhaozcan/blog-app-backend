@@ -60,11 +60,9 @@ The Blog App Backend is a Node.js application that provides a RESTful API for ma
 
 ## API Endpoints
 
-- **Authentication**
-  - `POST /register`: Register a new user.
-  - `POST /login`: Log in a user.
-
 - **Users**
+  - `POST /users/register`: Register a new user.
+  - `POST /users/login`: Log in a user.
   - `GET /users/:id`: Get a user by ID.
   - `PUT /users/:id`: Update a user by ID.
   - `DELETE /users/:id`: Delete a user by ID.
@@ -76,11 +74,3 @@ The Blog App Backend is a Node.js application that provides a RESTful API for ma
   - `POST /posts`: Create a new post.
   - `PUT /posts/:id`: Update a post by ID.
   - `DELETE /posts/:id`: Delete a post by ID.
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License.
