@@ -97,18 +97,28 @@ const getPost = async (req, res) => {
 
 // Create a new post
 const createPost = async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, categories = [] } = req.body;
   if (!title || !content) {
     return res.status(400).send({ message: 'Title and content are required' });
   }
 
+  // Validate categories is an array
+  if (!Array.isArray(categories)) {
+    return res.status(400).send({ message: 'Categories must be an array' });
+  }
+
   try {
-    const post = new Post({ title, content, user_id: new ObjectId(req.user.id) });
+    const post = new Post({ 
+      title, 
+      content, 
+      categories,
+      user_id: new ObjectId(req.user.id) 
+    });
     await post.validate();
     await post.save();
     res.status(201).send({ post });
   } catch (error) {
-    console.error('Error creating post:', error.meessage);
+    console.error('Error creating post:', error.message);
     res.status(500).send({ message: 'Error creating post', error: error.message });
   }
 };
@@ -116,12 +126,15 @@ const createPost = async (req, res) => {
 // Update a post by ID
 const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { title, content, featured } = req.body;
+  const { title, content, featured, categories } = req.body;
   if (!ObjectId.isValid(id)) {
     return res.status(400).send({ message: 'Invalid post ID' });
   }
   if (!title || !content) {
     return res.status(400).send({ message: 'Title and content are required' });
+  }
+  if (categories && !Array.isArray(categories)) {
+    return res.status(400).send({ message: 'Categories must be an array' });
   }
   
   try {
@@ -134,11 +147,23 @@ const updatePost = async (req, res) => {
       return res.status(403).send({ message: 'You are not allowed to update this post.' });
     }
 
+    const updateData = {
+      title,
+      content,
+      featured,
+      updated_at: new Date()
+    };
+
+    if (categories) {
+      updateData.categories = categories;
+    }
+
     const updatedPost = await Post.findOneAndUpdate(
       { _id: new ObjectId(id), user_id: new ObjectId(req.user.id) },
-      { $set: { title, content, featured } },
+      { $set: updateData },
       { new: true }
     );
+    
     if (!updatedPost) {
       return res.status(404).send({ message: 'Post not found' });
     }
