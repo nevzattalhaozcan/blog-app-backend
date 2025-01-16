@@ -147,7 +147,8 @@ const updatePassword = async (req, res) => {
     if (user._id.toString() !== req.user.id) {
       return res.status(403).send({ message: 'You are not allowed to update this user' });
     }
-    if (!bcrypt.compare(oldPassword, user.password)) {
+    const verifyOldPass = await bcrypt.compare(oldPassword, user.password);
+    if (!verifyOldPass) {
       return res.status(401).send({ message: 'Invalid old password' });
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
