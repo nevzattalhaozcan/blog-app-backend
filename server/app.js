@@ -10,8 +10,16 @@ require('dotenv').config();
 // Middlewares
 app.use(express.json());
 app.use(morgan('dev'));
-app.use(cors({ 
-  origin: 'http://127.0.0.1:5500' 
+
+const allowedOrigins = ['http://127.0.0.1:5500', 'http://localhost:5174'];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 }));
 
 // Connect to the database once
