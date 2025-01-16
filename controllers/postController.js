@@ -3,20 +3,70 @@ const { ObjectId } = require('mongoose').Types;
 
 // Get all posts
 const getAllPosts = async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { 
+    page = 1, 
+    limit = 10,
+    sort = 'newest',
+    category,
+    featured,
+    search,
+    startDate,
+    endDate
+  } = req.query;
 
   try {
-    const posts = await Post.find()
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit);
+    // Build filter object
+    const filter = {};
+    
+    if (category) {
+      filter.categories = category;
+    }
+    
+    if (featured !== undefined) {
+      filter.featured = featured === 'true';
+    }
 
-    const totalPosts = await Post.countDocuments();
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (startDate || endDate) {
+      filter.created_at = {};
+      if (startDate) filter.created_at.$gte = new Date(startDate);
+      if (endDate) filter.created_at.$lte = new Date(endDate);
+    }
+
+    // Determine sort configuration
+    let sortConfig = {};
+    switch (sort) {
+      case 'oldest':
+        sortConfig = { created_at: 1 };
+        break;
+      case 'title-asc':
+        sortConfig = { title: 1 };
+        break;
+      case 'title-desc':
+        sortConfig = { title: -1 };
+        break;
+      case 'newest':
+      default:
+        sortConfig = { created_at: -1 };
+    }
+
+    const posts = await Post.find(filter)
+      .sort(sortConfig)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const totalPosts = await Post.countDocuments(filter);
 
     res.status(200).json({
       posts,
       totalPosts,
-      currentPage: page,
+      currentPage: parseInt(page),
       totalPages: Math.ceil(totalPosts / limit)
     });
   } catch (error) {
