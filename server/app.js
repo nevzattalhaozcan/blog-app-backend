@@ -14,7 +14,7 @@ app.use(morgan('dev'));
 const allowedOrigins = [
   'http://127.0.0.1:5500',
   'http://localhost:5174',
-  'https://nevzattalhaozcan.github.io/blog-app/'];
+  'https://nevzattalhaozcan.github.io'];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
